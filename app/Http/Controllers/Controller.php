@@ -128,7 +128,7 @@ class Controller extends BaseController
     }
 
     function storeLoginEtudiant(Request $request)
-    {   
+    {
         $rules = [
         'email' => ['required', 'email'],
         'password' => ['required']
@@ -151,8 +151,8 @@ class Controller extends BaseController
 
         //$value = $request->session()->get($user['email']);
         $request->session()->put('student', $student);
-        //return view('tableau_de_bord_etudiant'); 
-        
+        //return view('tableau_de_bord_etudiant');
+
         } catch (Exception $e) {
         return redirect()->back()->withInput()->withErrors("Impossible de vous authentifier.");
     }
@@ -203,10 +203,14 @@ function storeLoginEnseignant(Request $request)
 
 }
       function logout(Request $request) {
-        if($request->session()->has('student'))
+        if($request->session()->has('student')){
         $request->session()->forget('student');
-        else
+        $value=$request->session()->get('student');
+        //dd($value);
+        }
+        else{
         $request->session()->forget('teacher');
+        }
 
         return redirect()->route('PageAccueil.show');
       }
@@ -307,7 +311,6 @@ function storeLoginEnseignant(Request $request)
 //--------------------------------------------------------------------------------------------------------------------------------
     function showProfil(Request $request)
     {
-       
         $hasKey = $request->session()->has('student');
         //dd($hasKey);
        //dump($hasKey);
@@ -317,9 +320,9 @@ function storeLoginEnseignant(Request $request)
 
         $value = $request->session()->get('student');
         $email = $value[1];
-        
+
         try{
-            
+
         $tableEtudiant = $this->repository->tableEtudiant($email);
         $nom = $tableEtudiant[0]->NomEtudiant;
         //dump($nom);
@@ -331,8 +334,8 @@ function storeLoginEnseignant(Request $request)
         //dd($NomImage);
 
         $tableInformations = ['NomImage'=>$NomImage ,'nom'=>$nom , 'prenom'=>$prenom , 'dateNaissance'=>$dateNaissance , 'phone'=>$phone , 'classe'=>$classe];
-        
-        
+
+
         } catch(Exception $e){
             return redirect()->back()->withErrors("il y a eu un probleme");
         }
@@ -379,9 +382,9 @@ function storeLoginEnseignant(Request $request)
         //dump($request->all());
         $validatedData = $request->validate($rules,$messages);
         $ancienEmail = $validatedData['ancienEmail'];
-        
 
-        
+
+
 
         //dd($nom . $prenom . $ancienEmail . $nouveauEmail . $date);
         $hasKey = $request->session()->has('student');
@@ -390,7 +393,6 @@ function storeLoginEnseignant(Request $request)
         }
         //dump(gettype($tableEtudiant));
         //dd(count($tableEtudiant));
-        
         try{
         //dd($request->file('image'));
         $tableEtudiant = $repository->tableEtudiant($ancienEmail);
@@ -408,16 +410,15 @@ function storeLoginEnseignant(Request $request)
 
         if($validatedData['prenom']!== null)
             $prenom = $validatedData['prenom'];
-        
         if($validatedData['phone']!=null)
             $phone = $validatedData['phone'];
 
         if($validatedData['ancienEmail']!= null)
             $ancienEmail = $validatedData['ancienEmail'];
-        
+
         if($validatedData['nouveauEmail']!= null)
             $nouveauEmail = $validatedData['nouveauEmail'];
-        
+
         if($validatedData['date']!= null)
             $date = $validatedData['date'];
         //dd(gettype($phone));
@@ -425,12 +426,10 @@ function storeLoginEnseignant(Request $request)
 
 
         return redirect()->route('profil.show')->with('message','Modiffications enrigistrées');
-        
         }catch(Exception $e)
         {
             return redirect()->back()->withErrors("Modifs non enrigistrées");
         }
-        
     }
 //-------------------------------------------------------------------------------------------------------------------------
 function storePhoto(Request $request)
@@ -447,16 +446,26 @@ function storePhoto(Request $request)
     if($request->hasFile('image'))
     {
         $fileName = $request->image->getClientOriginalName();
-
-        $request->image->storeAs('image',$fileName,'public');
+        try
+        {
+            $this->repository->verificationExtensionImage($fileName);
+        }catch(Exception $e)
+        {
+            return redirect()->back()->withErrors("Extension de photos autorisée => (png,PNG,jpg,JPG,jpeg,GPEG) uniquement");
+        }
+        //$request->image->storeAs('image',$fileName,'public');
+        $nomFichierTmp = $_FILES['image']['tmp_name'];
+        //dd($nomFichierTmp);
+        $fichierDestination = 'C:\Users\hp\OneDrive\Bureau\25-03-21-00..56\contact\public\storage\image/'.$fileName;
+        $this->repository->envoiPhoto($nomFichierTmp, $fichierDestination);
         DB::table('Etudiant')
         ->where('Email_Etudiant', $email)
         ->update(['NomImage'=> $fileName]);
         return redirect()->back()->with("message","Photo de profil changé avec succé");
     }
     return redirect()->back()->withErrors("aucune photo selectionné");
-   
-    
+
+
 }
 //-------------------------------------------------------------------------------------------------------------------------------
     function showMesRendezVousEtudiant(Request $request)
@@ -466,7 +475,19 @@ function storePhoto(Request $request)
         if(!$hasKey){
             return redirect()->route('PageAccueil.show');
         }
-        return view('mes_rendez_vous_etudiant');
+        $IdEtudiant = $request->session()->get('student')[0];
+
+        $msg_count=$this->repository->msg_count($IdEtudiant);
+
+        // $ms=$this->repository->getIdtech($IdEtudiant);
+        $CC=$this->repository->msg_rdv($IdEtudiant);
+
+
+        if($CC==0) return view('mes_rendez_vous_etudiant',['msg_count' => $msg_count ,'CC'=>$CC]);
+
+         $Names=$this->repository->info($IdEtudiant);
+
+        return view('mes_rendez_vous_etudiant',['msg_count' => $msg_count, 'Names' => $Names,'CC'=>$CC]);
     }
 //--------------------------------------------------------------------------------------------------------------------------------
     function priseRendezVousForm(Request $request)
@@ -489,7 +510,7 @@ function storePhoto(Request $request)
             $tabDispoLundi[$i] = $tableDispoEnseignant[$i];
             $tabDispoLundi[$i]['H'] = $tab[$i];
         }
-        
+
         for($i=9; $i<18 ;$i++)
         {
             $tabDispoMardi[$i] = $tableDispoEnseignant[$i];
@@ -514,8 +535,8 @@ function storePhoto(Request $request)
         //dump("okkkkkkk");
         $arrayUrl = DB::table('RendezVous')->get('urlFichier')->toArray();
         //$url = $arrayUrl[0]->urlFichier;
-        $nonFichier = $this->repository->nonFichier();
-        $nomFichierHache = $nonFichier[0]->nomFichierHache;
+        //$nonFichier = $this->repository->nonFichier();
+        //$nomFichierHache = $nonFichier[0]->nomFichierHache;
         return view('prise_rendez_vous_etudiant',[  'PrénomEnseignant'=>$request->profs['NomEnseignant'],
                                                     'NomEnseignant'=>$request->profs['PrénomEnseignant'],
                                                     'Matière'=>$request->profs['Matière'],
@@ -524,8 +545,8 @@ function storePhoto(Request $request)
                                                     'tabDispoMercredi'=>$tabDispoMercredi,
                                                     'tabDispoJeudi'=>$tabDispoJeudi,
                                                     'tabDispoVendredi'=>$tabDispoVendredi,
-                                                    'email'=>$email,
-                                                    'nomFichierHache'=>$nomFichierHache
+                                                    'email'=>$email
+                                                    //'nomFichierHache'=>$nomFichierHache
                                                 ]);
 
     }
@@ -536,17 +557,17 @@ function storePhoto(Request $request)
 
         /*
         verification des champs saisis
-        verification de la disponibilité de l'enseignant
+        verification de la disponibilité de l'enseignant*/
 
-        */
         $hasKey = $request->session()->has('student');
+
         if(!$hasKey){
             return redirect()->route('PageAccueil.show');
         }
-        
+
         //dd($request->all());
 
-        
+
         $emailProf = $request->input()["emailprofs"];
         $tabCoche = $request->input('choix');
         //dd($tabCoche);
@@ -570,7 +591,7 @@ function storePhoto(Request $request)
         //return view('mes_rendez_vous_etudiant');
     }
 //----------------------------------------------------------------------------------------------------------------------------
- 
+
     function annulationRendezVous(Request $request)
     {
         /*
@@ -585,36 +606,115 @@ function storePhoto(Request $request)
         return view('mes_rendez_vous_etudiant');
     }
 
-    function showMessageReçu()
+    function showMessageReçu(Request $request)
     {
+        $hasKey = $request->session()->has('student');
+        if(!$hasKey){
+            return redirect()->route('PageAccueil.show');
+        }
 
-        return view('message_reçu_etudiant');
+        $IdEtudiant = $request->session()->get('student')[0];
+$CC=$this->repository->msg_count($IdEtudiant);
+if($CC==0) return view('message_reçu_etudiant',['CC'=>$CC]);
+
+
+
+        $Names=$this->repository->getMessageIdtechNames($IdEtudiant);
+        // dd($Names);
+              //  dd($Names);
+        return view('message_reçu_etudiant',['Names'=>$Names, 'CC'=>$CC]);
+    }
+
+    function showMessageReçu_msg(Request $request)
+    {
+        $hasKey = $request->session()->has('student');
+        if(!$hasKey){
+            return redirect()->route('PageAccueil.show');
+        }
+        $IdEtudiant = $request->session()->get('student')[0];
+        // dd($IdEtudiant);
+        // $Idprof=$request->Id_Enseignant;
+
+        // dd($request->Id_Enseignant);
+        $MSG=$this->repository->getMessage2($request->Id_msg);
+        $Name=$this->repository->getMessageIdtechName($request->Id_Enseignant);
+        // dd($Name);
+        return view('message_reçu_etudiant-msg',['Name'=>$Name , 'MSG'=>$MSG]);
     }
 //---------------------------------------------------------------------------------------------------------------------------------
-    function rendezVousMessageForm()
+    function rendezVousMessageForm(Request $request)
     {
-        /*
-        verifications habituelles
-        */
-        return view('mes_rendez_vous_enseignant');
+        $hasKey1 = $request->session()->has('teacher');
+        if(!$hasKey1){
+            return view('page_accueil');
+        }
+
+        $Id_Enseignant = $request->session()->get('teacher')[0];
+
+        $CC=$this->repository->msg_rdv2($Id_Enseignant);
+
+        if($CC==0) return view('mes_rendez_vous_enseignant',['CC'=>$CC]);
+        $Names=$this->repository->info2($Id_Enseignant);
+
+        return view('mes_rendez_vous_enseignant',['Names'=>$Names, 'CC'=>$CC]);
+
+
+
+
+
+
+
+
     }
     function RendezVousMessage(Request $request)
     {
-// dd($request->etuds);
+        $hasKey1 = $request->session()->has('teacher');
+        //dd($hasKey1);
+
+        if(!$hasKey1){
+            return view('page_accueil');
+        }
+        // $Id_Enseignant = $request->session()->get('teacher')[0];
+
+        // , 'CC'=>$CC
+//  dd($request->etuds);
 // $request->etuds['NomEtudiant'];
 // $request->etuds['PrénomEtudiant'];
 // $request->etuds['Niveau'];
 
-
-        return view('message_enseignant_etudiant',['PrénomEtudiant'=>$request->etuds['PrénomEtudiant'],'NomEtudiant'=>$request->etuds['NomEtudiant'],'Niveau_Etude'=>$request->etuds['Niveau_Etude']]);
+        return view('message_enseignant_etudiant',['etuds'=>$request->etuds,'PrénomEtudiant'=>$request->etuds['PrénomEtudiant'],'NomEtudiant'=>$request->etuds['NomEtudiant'],'Niveau_Etude'=>$request->etuds['Niveau_Etude']]);
     }
 
-    function storeRendezVousMessage()
+    function storeRendezVousMessage(Request $request, Repository $repository)
     {
-        /*
-        verifications habituelles + message "message envoyer avec succé"
-        */
-        return ('messageenboyé');
+        $hasKey1 = $request->session()->has('teacher');
+        //dd($hasKey1);
+
+        if(!$hasKey1){
+            return view('page_accueil');
+        }
+
+        $IdEnseignant = $request->session()->get('teacher')[0];
+        $IdEtudiant = $request->etuds['IdEtudiant'];
+        // dd($IdEnseignant);
+        //  dd($request->etuds);
+        $rules = [
+            'msgEnEt' => ['required'],
+            ];
+            $messages = [
+                'msgEnEt.required' => 'Vous devez saisir un message.'
+            ];
+            $validatedData = $request->validate($rules,$messages);
+            $Message = $validatedData['msgEnEt'];
+            $this->repository->sendMessage($Message, $IdEtudiant , $IdEnseignant);
+            $CC=$this->repository->msg_rdv2($IdEnseignant);
+
+            if($CC==0) return view('mes_rendez_vous_enseignant',['CC'=>$CC]);
+            $Names=$this->repository->info2($IdEnseignant);
+
+            return view('mes_rendez_vous_enseignant',['Names'=>$Names, 'CC'=>$CC]);
+
+
     }
 
     function storeannulationRendezVousEnseignant()
@@ -626,22 +726,37 @@ function storePhoto(Request $request)
         return view('mes_rendez_vous_etudiant');
     }
 
-    function RendezVous()
+    function RendezVous(Request $request)
     {
-        /*
-        verifications habituelles + message "message envoyer avec succé"
-        */
-        return view('rendez_vous');
+        $hasKey1 = $request->session()->has('teacher');
+        if(!$hasKey1){
+            return view('page_accueil');
+        }
+
+        $Id_Enseignant = $request->session()->get('teacher')[0];
+        // dd($request->Name['Id_RDV']);
+        $Id_RDV=intval($request->Name['Id_RDV']);
+        //  dd($request->all());
+        $Msg= json_decode(json_encode($this->repository->getmmj($Id_RDV)), true);
+
+        // dd($Msg[0]['Message']);
+
+        $obj= json_decode(json_encode($this->repository->getobj($Id_RDV)), true);
+        // dd($obj[0]);
+        $doc= json_decode(json_encode($this->repository->getdoc($Id_RDV)), true);
+        // dd($doc[0]['nomFichierHache']);
+            $etudiant=["NomEtudiant" => "SIYOUCEF","PrénomEtudiant" => "Walid","Niveau_Etude" => "Troisième_année"];
+        return view('rendez_vous',['etudiant'=>$etudiant,'obj'=>$obj ,'Msg'=>$Msg ,'nomFichierHache'=>$doc[0]['nomFichierHache']] );
     }
 //-----------------------------------------------------------------------------------------------------------------------------------------------
 
     function showdisponibilites(Request $request)
     {
-       
+
 
         $hasKey1 = $request->session()->has('teacher');
         //dd($hasKey1);
-        
+
         if(!$hasKey1){
             return view('page_accueil');
         }
@@ -656,6 +771,7 @@ function storePhoto(Request $request)
         $matiere = $tabEns[0]["Matière"];
         $matiere = strtoupper($matiere);
 
+
         $tableDispoEnseignant = $this->repository->tabDispoEnseignant($email);
         $tableDispoEnseignant = json_decode(json_encode($tableDispoEnseignant), true);
         for($i=0; $i<9 ;$i++)
@@ -663,7 +779,6 @@ function storePhoto(Request $request)
             $tabDispoLundi[$i] = $tableDispoEnseignant[$i];
             $tabDispoLundi[$i]['H'] = $tab[$i];
         }
-        
         for($i=9; $i<18 ;$i++)
         {
             $tabDispoMardi[$i] = $tableDispoEnseignant[$i];
@@ -701,36 +816,71 @@ function storePhoto(Request $request)
     {
         $hasKey1 = $request->session()->has('teacher');
         //dd($hasKey1);
-        
+
         if(!$hasKey1){
             return view('page_accueil');
         }
-        
+
         $email = $request->session()->get('teacher')[1];
         //dd($email);
         $tabCoché = $request->input('choix');
         //dd( $tabCoché);
         //$taille = count($tabCoché);
         $this->repository->modificationDispo($email, $tabCoché);
-        
+
         return redirect()->back()->with('message', 'Disponibilitées mises a jour');
     }
 //---------------------------------------------------------------------BARRE DE RECHERCHE-------------------------------------------------------
 
-function showSearchBarre()
+function showSearchBarre(Request $request)
 {
+    $hasKey = $request->session()->has('student');
+    if(!$hasKey){
+        return redirect()->route('PageAccueil.show');
+    }
+    $IdEtudiant = $request->session()->get('student')[0];
+
+
 $q = request()->input('q');
+// dd($q);
+if(empty($q)){
+    return redirect()->route('MesRendezVousEtudiant');
+}
 $profss= $this->repository->searchProf($q);
 
-return view('mes_rendez_vous_etudiant-research', ['profss' => $profss]);
+$msg_count=$this->repository->msg_count($IdEtudiant);
+
+$CC=$this->repository->msg_rdv($IdEtudiant);
+
+if($CC==0) return view('mes_rendez_vous_etudiant-research',['profss' => $profss,'msg_count' => $msg_count ,'CC'=>$CC]);
+
+$Names=$this->repository->info($IdEtudiant);
+
+
+return view('mes_rendez_vous_etudiant-research', ['profss' => $profss, 'msg_count' => $msg_count,'Names' => $Names ,'CC'=>$CC]);
 }
 
-function showSearchBarre2()
+function showSearchBarre2(Request $request)
 {
-$q = request()->input('q');
-$etudss= $this->repository->searchEtud($q);
+    $hasKey1 = $request->session()->has('teacher');
+    if(!$hasKey1){
+        return view('page_accueil');
+    }
 
-return view('mes_rendez_vous_enseignant-research', ['etudss' => $etudss]);
+    $Id_Enseignant = $request->session()->get('teacher')[0];
+$q = request()->input('q');
+if(empty($q)){
+    return redirect()->route('rendezVousMessage');
+}
+$etudss= $this->repository->searchEtud($q);
+$CC=$this->repository->msg_rdv2($Id_Enseignant);
+
+if($CC==0) return view('mes_rendez_vous_enseignant-research',['etudss' => $etudss ,'CC'=>$CC]);
+
+
+$Names=$this->repository->info2($Id_Enseignant);
+
+return view('mes_rendez_vous_enseignant-research', ['etudss' => $etudss ,'Names'=>$Names ,'CC'=>$CC]);
 }
 
 }

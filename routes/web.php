@@ -77,6 +77,7 @@ Route::get('/etudiant/prise-rendez-vous', [Controller::class, 'priseRendezVousFo
 Route::post('/prise-rendez-vous', [Controller::class, 'storePriseRendezVous'])->name('priseRendezVous.post');
 Route::post('/annulationRendezVous', [Controller::class, 'storeannulationRendezVous'])->name('annulationRendezVous.post');
 Route::get('/etudiant/message-reçu', [Controller::class, 'showMessageReçu'])->name('messageRecu.show');
+Route::get('/etudiant/message-reçu-msg', [Controller::class, 'showMessageReçu_msg'])->name('messageRecu_msg.show');
 
 
 

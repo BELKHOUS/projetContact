@@ -1,9 +1,7 @@
 /* Suppression de tables existantes */
-DROP TABLE IF EXISTS Probleme;
-DROP TABLE IF EXISTS Fichier;
 DROP TABLE IF EXISTS Message;
 DROP TABLE IF EXISTS RendezVous;
-
+DROP TABLE IF EXISTS Disponibilite;
 DROP TABLE IF EXISTS UtilisateurEtudiant;
 DROP TABLE IF EXISTS UtilisateurEnseignant;
 DROP TABLE IF EXISTS Enseignant;
@@ -25,7 +23,7 @@ UNIQUE (Email_Etudiant)
 
 );
 CREATE TABLE Enseignant (
-Id_Enseignant INTEGER PRIMARY KEY ,
+Id_Enseignant INTEGER PRIMARY KEY AUTOINCREMENT,
 NomEnseignant varchar(20) NOT NULL,
 PrénomEnseignant varchar(20) NOT NULL,
 Date_Naissance date NOT NULL,
@@ -53,24 +51,16 @@ nomFichierHache varchar(200),
 );
 
 CREATE TABLE Message (
-Id_msg INTEGER PRIMARY KEY ,
+Id_msg INTEGER PRIMARY KEY AUTOINCREMENT,
+Message VARCHAR(3000),
+Id_Enseignant INTEGER,
 IdEtudiant INTEGER,
-  FOREIGN KEY(IdEtudiant) REFERENCES Etudiant(IdEtudiant)
-);
 
-CREATE TABLE Fichier (
-Id_Fichier INTEGER PRIMARY KEY ,
-IdEtudiant INTEGER,
-  FOREIGN KEY(IdEtudiant) REFERENCES Etudiant(IdEtudiant)
+  FOREIGN KEY(IdEtudiant) REFERENCES Etudiant(IdEtudiant),
+  FOREIGN KEY(Id_Enseignant) REFERENCES Enseignant(Id_Enseignant)
 
 );
 
-CREATE TABLE Probleme (
-Id_Pbm INTEGER PRIMARY KEY,
-Nom_Pbm varchar(20),
-IdEtudiant INTEGER,
-  FOREIGN KEY(IdEtudiant) REFERENCES Etudiant(IdEtudiant)
-);
 
 CREATE TABLE UtilisateurEtudiant (
 Id INTEGER PRIMARY KEY AUTOINCREMENT,

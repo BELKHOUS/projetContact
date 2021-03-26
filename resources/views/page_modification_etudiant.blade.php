@@ -14,14 +14,14 @@ Modification profil
 
 <div class="big-box">
 @if(session()->has('message'))
-        <div class="alert alert-success" style="font-size: 20px;">
+        <div id="messageDisp" class="alert alert-success" style="font-size: 20px;">
             {{ session()->get('message') }}
         </div>
     @endif
     <h2> Profil</h2>
     <h3>A propos de moi</h3><br>
     <form class="opload" method="POST" action="{{route('photo.post')}}" enctype="multipart/form-data">
-       @csrf 
+       @csrf
        <input type="file" name="image"><br>
        <input type="submit" value="upload">
     </form>
@@ -29,7 +29,7 @@ Modification profil
     <form class="profil-edit-box" method="POST" action="{{route('modificationEtudiant.post')}}">
         @csrf
         @if ($errors->any())
-        <div class="alert alert-warning">
+        <div id="messageDisp" class="alert alert-warning">
             infos non actualisées &#9785;
         </div>
         @endif
@@ -38,18 +38,18 @@ Modification profil
                 <td class="td1" >
                     <ul class="">
                         <li>
-                        
+
                             <img class="photo_profil2" src="http://localhost:8000/storage/image/{{$nomImage}}" alt=""><br>
                         </li>
-                       
+
                     </ul>
                 </td>
                 <td>
                     <div class="profil_edit">
-                      
+
                         <input type="text" id="nom" name="nom" class="first-name1" placeholder="Nom">
                         <div class="alert-danger"> {{ $errors->first('nom')}} </div>
-                        
+
 
                         <input type="text" name="prenom" placeholder="Prénom" class="last-name1">
                         <div class="alert-danger"> {{ $errors->first('Prénom')}} </div>

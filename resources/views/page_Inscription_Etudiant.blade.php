@@ -92,7 +92,7 @@ Inscription Etudiant
 
 
 <div class="connexion-index">Vous avez déjà un compte ?
-<a href="#">Connectez-vous</a></div>
+<a href="{{route('LogineEtudiant.show')}}">Connectez-vous</a></div>
 
 
 

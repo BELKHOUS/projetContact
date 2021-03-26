@@ -27,10 +27,15 @@ Message enseignant
         </div>
     </div>
     <br><br>
-    <form action="">
+    <form action="{{route('message-enseignant-etudiant.post',['etuds'=>$etuds])}}" method="POST">
+        @csrf
         <div class="Message1">
-            <textarea placeholder="Message"></textarea><br>
-            <input type="submit" name="submitInfo" value="Envoyer" id="Envoyer">
+
+            <textarea placeholder="Message" name="msgEnEt"></textarea><br>
+            @error('msgEnEt')
+            {{ $message }}
+            @enderror
+            <button type="submit" id="Envoyer" class="btn btn-secondary">Envoyer</button>
         </div>
     </form>
 

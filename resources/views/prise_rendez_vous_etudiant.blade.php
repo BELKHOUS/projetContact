@@ -10,15 +10,14 @@ Prise rendez-vous
 @section('content')
 
 <form method="POST" action="{{route('priseRendezVous.post',['emailprofs'=>$email])}}" enctype="multipart/form-data">
-@csrf 
+@csrf
     <div class="container22">
-        <a href="http://localhost:8000/storage/image/fichiers/{{$nomFichierHache}}">TELECHERGER</a>
     @if ($errors->any())
         <div id="messageDisp" class="alert alert-warning">
             Merci de selectionner au moin un créneau &#9785;
         </div>
         @endif
-    
+
     @if(session()->has('message'))
         <div id="messageDisp" class="alert alert-success" style="font-size: 15px;">
             {{ session()->get('message') }}
@@ -26,7 +25,7 @@ Prise rendez-vous
     @endif
         <h2> Rendez-vous</h2>
         <div class="bar_iden">
-            <ul>
+              <!--<ul>
                 <li>
                     <img class="photo_profil3" src="/icon/profil1.jpeg" alt="">
                     <div class="prof">
@@ -34,7 +33,9 @@ Prise rendez-vous
                         <span class="matière">{{$Matière}}</span>
                     </div>
                 </li>
-            </ul>
+            </ul>-->
+            <input name="profN" type="hidden" value="{{$NomEnseignant}}">
+            <input name="profP" type="hidden" value="{{$PrénomEnseignant}}">
         </div><br>
         <h3> Message</h3>
         <div class="Message2">
@@ -54,10 +55,9 @@ Prise rendez-vous
                 </select>
                 </li>
                 <li>
+
                     <input name="fichier" type="file">
-                    <a href="#">
-                        <button class="docs">Ajouter un document</button>
-                    </a>
+
                 </li>
             </ul>
         </div>
@@ -73,7 +73,7 @@ Prise rendez-vous
                     @if($tab['Etat']=='oui')
                     <td><input value="{{$tab['Heure']}}" type="radio" id="ten"    name="choix[]">        <label for="ten" class="radio2">{{$tab['H']}}</label></td>
                     @else
-                    <td>Non Dispo</td>
+                    <td>--</td>
                     @endif
                     @endforeach
                 </tr>
@@ -85,7 +85,7 @@ Prise rendez-vous
                     @if($tab['Etat']=='oui')
                     <td><input value="{{$tab['Heure']}}" type="radio" id="ten"    name="choix[]">        <label for="ten" class="radio2">{{$tab['H']}}</label></td>
                     @else
-                    <td>Non Dispo</td>
+                    <td>--</td>
                     @endif
                     @endforeach
                 </tr>
@@ -95,7 +95,7 @@ Prise rendez-vous
                     @if($tab['Etat']=='oui')
                     <td><input value="{{$tab['Heure']}}" type="radio" id="ten"    name="choix[]">        <label for="ten" class="radio2">{{$tab['H']}}</label></td>
                     @else
-                    <td>Non Dispo</td>
+                    <td>--</td>
                     @endif
                     @endforeach
                 </tr>
@@ -105,7 +105,7 @@ Prise rendez-vous
                     @if($tab['Etat']=='oui')
                     <td><input value="{{$tab['Heure']}}" type="radio" id="ten"    name="choix[]">        <label for="ten" class="radio2">{{$tab['H']}}</label></td>
                     @else
-                    <td>Non Dispo</td>
+                    <td>--</td>
                     @endif
                     @endforeach
                 </tr>
@@ -115,10 +115,13 @@ Prise rendez-vous
                     @if($tab['Etat']=='oui')
                     <td><input value="{{$tab['Heure']}}" type="radio" id="ten"    name="choix[]">        <label for="ten" class="radio2">{{$tab['H']}}</label></td>
                     @else
-                    <td>Non Dispo</td>
+                    <td>--</td>
                     @endif
                     @endforeach
                 </tr>
+
+
+
 
             </tbody>
         </table>

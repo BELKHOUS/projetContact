@@ -40,7 +40,7 @@ Authentification
         <br>
         <br>
         <div class="connexion-index">Vous n'avez pas encore de compte ?
-        <a href="{{route('InscriptionEtudiant.show')}}">Inscrivez-vous</a></div>-->
+        <a href="{{route('InscriptionEtudiant.show')}}">Inscrivez-vous</a></div>
 
     </form>
 

@@ -5,7 +5,7 @@ Disponibilité
 @endsection
 @section('assets')
     <link rel="stylesheet" href="/css/style.css">
-   
+
 @endsection
 
 @section('content')
@@ -14,7 +14,7 @@ Disponibilité
 
 <form method="POST" action="{{route('diponibilites.post')}}">
 
-@csrf 
+@csrf
     <div class="container" >
     @if(session()->has('message'))
         <div id="messageDisp" class="alert alert-success" style="font-size: 15px;">
@@ -55,7 +55,7 @@ Disponibilité
             </thead>
             <tbody>
                 <tr>
-                <td> MARDI</td>
+                <td> MARDI </td>
                 @foreach($tabDispoMardi as $tab)
                 @if($tab['Etat']=='oui')
                     <td><input value="{{$tab['Heure']}}" type="checkbox" id="ten" name="choix[]" checked><label for="ten" class="checkbox2">{{$tab['H']}}</label></td>
